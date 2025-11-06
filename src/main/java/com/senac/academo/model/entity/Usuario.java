@@ -8,49 +8,60 @@ import jakarta.validation.constraints.NotNull;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @Entity
-@Table(name = "usuarios", indexes = {
-        @Index(name = "idx_email", columnList = "email"),
-        @Index(name = "idx_tipo_usuario", columnList = "tipo_usuario")
+@Table(name = "usuario", indexes = {
+        @Index(name = "idx_usuario_email", columnList = "usuario_email"),
+        @Index(name = "idx_usuario_tipo", columnList = "usuario_tipo")
 })
 public class Usuario {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "usuario_id")
     private Integer id;
 
     @NotBlank(message = "Nome é obrigatório")
-    @Column(nullable = false)
+    @Column(name = "usuario_nome", nullable = false)
     private String nome;
 
     @NotBlank(message = "Email é obrigatório")
     @Email(message = "Email deve ser válido")
-    @Column(nullable = false, unique = true)
+    @Column(name = "usuario_email", nullable = false, unique = true)
     private String email;
 
     @NotBlank(message = "Senha é obrigatória")
-    @Column(name = "senha_hash", nullable = false)
+    @Column(name = "usuario_senha", nullable = false)
     private String senhaHash;
 
     @NotNull(message = "Tipo de usuário é obrigatório")
     @Enumerated(EnumType.STRING)
-    @Column(name = "tipo_usuario", nullable = false)
+    @Column(name = "usuario_tipo", nullable = false)
     private TipoUsuario tipoUsuario = TipoUsuario.ALUNO;
 
-    @Column(name = "data_cadastro", nullable = false, updatable = false)
+    @Column(name = "usuario_data_cadastro", nullable = false, updatable = false)
     private LocalDateTime dataCadastro;
 
-    @Column(nullable = false)
+    @Column(name = "usuario_status", nullable = false)
     private Boolean ativo = true;
 
-
+    // Relacionamentos
     @OneToMany(mappedBy = "aluno", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Matricula> matriculas = new ArrayList<>();
 
     @OneToMany(mappedBy = "professor", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<DisciplinaProfessor> disciplinasLecionadas = new ArrayList<>();
+
+    @ManyToMany(fetch = FetchType.EAGER)
+    @JoinTable(
+            name = "role_usuario",
+            joinColumns = @JoinColumn(name = "role_usuario_usuario_id"),
+            inverseJoinColumns = @JoinColumn(name = "role_usuario_role_id")
+    )
+    private Set<Role> roles = new HashSet<>();
 
     @PrePersist
     protected void onCreate() {
@@ -63,7 +74,7 @@ public class Usuario {
         }
     }
 
-
+    // Construtores
     public Usuario() {
     }
 
@@ -74,6 +85,7 @@ public class Usuario {
         this.tipoUsuario = tipoUsuario;
     }
 
+    // Getters e Setters
     public Integer getId() {
         return id;
     }
@@ -146,7 +158,15 @@ public class Usuario {
         this.disciplinasLecionadas = disciplinasLecionadas;
     }
 
+    public Set<Role> getRoles() {
+        return roles;
+    }
 
+    public void setRoles(Set<Role> roles) {
+        this.roles = roles;
+    }
+
+    // Métodos auxiliares
     public boolean isProfessor() {
         return this.tipoUsuario == TipoUsuario.PROFESSOR;
     }

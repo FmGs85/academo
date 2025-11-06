@@ -1,6 +1,8 @@
 package com.senac.academo.controller;
 
+import com.senac.academo.mapper.MatriculaMapper;
 import com.senac.academo.model.dto.MatriculaDTO;
+import com.senac.academo.model.entity.Matricula;
 import com.senac.academo.model.enums.StatusMatricula;
 import com.senac.academo.service.MatriculaService;
 import jakarta.validation.Valid;
@@ -21,106 +23,88 @@ public class MatriculaController {
     @Autowired
     private MatriculaService matriculaService;
 
+    @Autowired
+    private MatriculaMapper matriculaMapper;
 
     @GetMapping
     public ResponseEntity<List<MatriculaDTO>> listarTodas() {
-        List<MatriculaDTO> matriculas = matriculaService.findAll();
-        return ResponseEntity.ok(matriculas);
+        List<Matricula> matriculas = matriculaService.listarTodas();
+        List<MatriculaDTO> dtos = matriculaMapper.toDTOList(matriculas);
+        return ResponseEntity.ok(dtos);
     }
-
 
     @GetMapping("/{id}")
     public ResponseEntity<MatriculaDTO> buscarPorId(@PathVariable Integer id) {
-        MatriculaDTO matricula = matriculaService.findById(id);
-        return ResponseEntity.ok(matricula);
+        Matricula matricula = matriculaService.buscarPorId(id)
+                .orElseThrow(() -> new RuntimeException("Matrícula não encontrada"));
+        MatriculaDTO dto = matriculaMapper.toDTO(matricula);
+        return ResponseEntity.ok(dto);
     }
-
 
     @PostMapping
     public ResponseEntity<MatriculaDTO> criar(@Valid @RequestBody MatriculaDTO matriculaDTO) {
-        MatriculaDTO novaMatricula = matriculaService.create(matriculaDTO);
-        return ResponseEntity.status(HttpStatus.CREATED).body(novaMatricula);
+        Matricula matricula = matriculaMapper.toEntity(matriculaDTO);
+        Matricula novaMatricula = matriculaService.criarMatricula(matricula);
+        MatriculaDTO dto = matriculaMapper.toDTO(novaMatricula);
+        return ResponseEntity.status(HttpStatus.CREATED).body(dto);
     }
-
 
     @PutMapping("/{id}")
     public ResponseEntity<MatriculaDTO> atualizar(
             @PathVariable Integer id,
             @Valid @RequestBody MatriculaDTO matriculaDTO) {
-        MatriculaDTO matriculaAtualizada = matriculaService.update(id, matriculaDTO);
-        return ResponseEntity.ok(matriculaAtualizada);
+        Matricula matricula = matriculaMapper.toEntity(matriculaDTO);
+        Matricula matriculaAtualizada = matriculaService.atualizarMatricula(id, matricula);
+        MatriculaDTO dto = matriculaMapper.toDTO(matriculaAtualizada);
+        return ResponseEntity.ok(dto);
     }
-
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deletar(@PathVariable Integer id) {
-        matriculaService.delete(id);
+        matriculaService.deletarMatricula(id);
         return ResponseEntity.noContent().build();
     }
 
-
     @GetMapping("/aluno/{alunoId}")
     public ResponseEntity<List<MatriculaDTO>> listarPorAluno(@PathVariable Integer alunoId) {
-        List<MatriculaDTO> matriculas = matriculaService.findByAluno(alunoId);
-        return ResponseEntity.ok(matriculas);
+        List<Matricula> matriculas = matriculaService.buscarPorAluno(alunoId);
+        List<MatriculaDTO> dtos = matriculaMapper.toDTOList(matriculas);
+        return ResponseEntity.ok(dtos);
     }
-
 
     @GetMapping("/disciplina/{disciplinaId}")
     public ResponseEntity<List<MatriculaDTO>> listarPorDisciplina(@PathVariable Integer disciplinaId) {
-        List<MatriculaDTO> matriculas = matriculaService.findByDisciplina(disciplinaId);
-        return ResponseEntity.ok(matriculas);
+        List<Matricula> matriculas = matriculaService.buscarPorDisciplina(disciplinaId);
+        List<MatriculaDTO> dtos = matriculaMapper.toDTOList(matriculas);
+        return ResponseEntity.ok(dtos);
     }
-
-
-    @GetMapping("/periodo/{periodo}")
-    public ResponseEntity<List<MatriculaDTO>> listarPorPeriodo(@PathVariable String periodo) {
-        List<MatriculaDTO> matriculas = matriculaService.findByPeriodo(periodo);
-        return ResponseEntity.ok(matriculas);
-    }
-
 
     @GetMapping("/status/{status}")
     public ResponseEntity<List<MatriculaDTO>> listarPorStatus(@PathVariable String status) {
-        StatusMatricula statusMatricula = StatusMatricula.fromValor(status);
-        List<MatriculaDTO> matriculas = matriculaService.findByStatus(statusMatricula);
-        return ResponseEntity.ok(matriculas);
+        StatusMatricula statusMatricula = StatusMatricula.valueOf(status.toUpperCase());
+        List<Matricula> matriculas = matriculaService.buscarPorStatus(statusMatricula);
+        List<MatriculaDTO> dtos = matriculaMapper.toDTOList(matriculas);
+        return ResponseEntity.ok(dtos);
     }
-
 
     @GetMapping("/aluno/{alunoId}/ativas")
     public ResponseEntity<List<MatriculaDTO>> listarAtivasPorAluno(@PathVariable Integer alunoId) {
-        List<MatriculaDTO> matriculas = matriculaService.findMatriculasAtivasByAluno(alunoId);
-        return ResponseEntity.ok(matriculas);
+        List<Matricula> matriculas = matriculaService.buscarPorAluno(alunoId);
+        // Filtrar apenas as ativas
+        List<Matricula> ativas = matriculas.stream()
+                .filter(m -> m.getStatus() == StatusMatricula.ATIVA)
+                .toList();
+        List<MatriculaDTO> dtos = matriculaMapper.toDTOList(ativas);
+        return ResponseEntity.ok(dtos);
     }
-
-
-    @GetMapping("/aluno/{alunoId}/periodo/{periodo}")
-    public ResponseEntity<List<MatriculaDTO>> listarPorAlunoEPeriodo(
-            @PathVariable Integer alunoId,
-            @PathVariable String periodo) {
-        List<MatriculaDTO> matriculas = matriculaService.findByAlunoAndPeriodo(alunoId, periodo);
-        return ResponseEntity.ok(matriculas);
-    }
-
-
-    @PutMapping("/{id}/trancar")
-    public ResponseEntity<MatriculaDTO> trancar(@PathVariable Integer id) {
-        MatriculaDTO matricula = matriculaService.trancarMatricula(id);
-        return ResponseEntity.ok(matricula);
-    }
-
-
-    @PutMapping("/{id}/reativar")
-    public ResponseEntity<MatriculaDTO> reativar(@PathVariable Integer id) {
-        MatriculaDTO matricula = matriculaService.reativarMatricula(id);
-        return ResponseEntity.ok(matricula);
-    }
-
 
     @GetMapping("/aluno/{alunoId}/total-ativas")
     public ResponseEntity<Map<String, Object>> contarMatriculasAtivas(@PathVariable Integer alunoId) {
-        Long total = matriculaService.contarMatriculasAtivas(alunoId);
+        List<Matricula> matriculas = matriculaService.buscarPorAluno(alunoId);
+        long total = matriculas.stream()
+                .filter(m -> m.getStatus() == StatusMatricula.ATIVA)
+                .count();
+
         Map<String, Object> response = new HashMap<>();
         response.put("alunoId", alunoId);
         response.put("totalMatriculasAtivas", total);

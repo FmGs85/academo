@@ -1,56 +1,43 @@
 package com.senac.academo.model.dto;
 
-import com.fasterxml.jackson.annotation.JsonInclude;
 import com.senac.academo.model.enums.StatusMatricula;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
+import com.senac.academo.model.enums.SituacaoMatricula;
 
-import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
-@JsonInclude(JsonInclude.Include.NON_NULL)
 public class MatriculaDTO {
 
     private Integer id;
-
-    @NotNull(message = "Aluno é obrigatório")
     private Integer alunoId;
-
-    @NotNull(message = "Disciplina é obrigatória")
+    private String alunoNome;
     private Integer disciplinaId;
-
+    private String disciplinaNome;
     private LocalDateTime dataMatricula;
-
-    @NotNull(message = "Status é obrigatório")
     private StatusMatricula status;
+    private SituacaoMatricula situacao;
+    private Double mediaFinal;
+    private Integer cargaHorariaPresente;
 
-    @NotBlank(message = "Período é obrigatório")
-    private String periodo;
-
-
-    private String nomeAluno;
-    private String emailAluno;
-    private String nomeDisciplina;
-    private String codigoDisciplina;
-    private BigDecimal mediaPonderada;
-    private String situacao; // Aprovado, Recuperação, Reprovado
-    private Integer totalAvaliacoes;
-    private Integer avaliacoesRealizadas;
-
-
+    // Construtores
     public MatriculaDTO() {
     }
 
-    public MatriculaDTO(Integer id, Integer alunoId, Integer disciplinaId,
-                        LocalDateTime dataMatricula, StatusMatricula status, String periodo) {
+    public MatriculaDTO(Integer id, Integer alunoId, String alunoNome, Integer disciplinaId,
+                        String disciplinaNome, LocalDateTime dataMatricula, StatusMatricula status,
+                        SituacaoMatricula situacao, Double mediaFinal, Integer cargaHorariaPresente) {
         this.id = id;
         this.alunoId = alunoId;
+        this.alunoNome = alunoNome;
         this.disciplinaId = disciplinaId;
+        this.disciplinaNome = disciplinaNome;
         this.dataMatricula = dataMatricula;
         this.status = status;
-        this.periodo = periodo;
+        this.situacao = situacao;
+        this.mediaFinal = mediaFinal;
+        this.cargaHorariaPresente = cargaHorariaPresente;
     }
 
+    // Getters e Setters
     public Integer getId() {
         return id;
     }
@@ -67,12 +54,28 @@ public class MatriculaDTO {
         this.alunoId = alunoId;
     }
 
+    public String getAlunoNome() {
+        return alunoNome;
+    }
+
+    public void setAlunoNome(String alunoNome) {
+        this.alunoNome = alunoNome;
+    }
+
     public Integer getDisciplinaId() {
         return disciplinaId;
     }
 
     public void setDisciplinaId(Integer disciplinaId) {
         this.disciplinaId = disciplinaId;
+    }
+
+    public String getDisciplinaNome() {
+        return disciplinaNome;
+    }
+
+    public void setDisciplinaNome(String disciplinaNome) {
+        this.disciplinaNome = disciplinaNome;
     }
 
     public LocalDateTime getDataMatricula() {
@@ -91,76 +94,27 @@ public class MatriculaDTO {
         this.status = status;
     }
 
-    public String getPeriodo() {
-        return periodo;
-    }
-
-    public void setPeriodo(String periodo) {
-        this.periodo = periodo;
-    }
-
-    public String getNomeAluno() {
-        return nomeAluno;
-    }
-
-    public void setNomeAluno(String nomeAluno) {
-        this.nomeAluno = nomeAluno;
-    }
-
-    public String getEmailAluno() {
-        return emailAluno;
-    }
-
-    public void setEmailAluno(String emailAluno) {
-        this.emailAluno = emailAluno;
-    }
-
-    public String getNomeDisciplina() {
-        return nomeDisciplina;
-    }
-
-    public void setNomeDisciplina(String nomeDisciplina) {
-        this.nomeDisciplina = nomeDisciplina;
-    }
-
-    public String getCodigoDisciplina() {
-        return codigoDisciplina;
-    }
-
-    public void setCodigoDisciplina(String codigoDisciplina) {
-        this.codigoDisciplina = codigoDisciplina;
-    }
-
-    public BigDecimal getMediaPonderada() {
-        return mediaPonderada;
-    }
-
-    public void setMediaPonderada(BigDecimal mediaPonderada) {
-        this.mediaPonderada = mediaPonderada;
-    }
-
-    public String getSituacao() {
+    public SituacaoMatricula getSituacao() {
         return situacao;
     }
 
-    public void setSituacao(String situacao) {
+    public void setSituacao(SituacaoMatricula situacao) {
         this.situacao = situacao;
     }
 
-    public Integer getTotalAvaliacoes() {
-        return totalAvaliacoes;
+    public Double getMediaFinal() {
+        return mediaFinal;
     }
 
-    public void setTotalAvaliacoes(Integer totalAvaliacoes) {
-        this.totalAvaliacoes = totalAvaliacoes;
+    public void setMediaFinal(Double mediaFinal) {
+        this.mediaFinal = mediaFinal;
     }
 
-    public Integer getAvaliacoesRealizadas() {
-        return avaliacoesRealizadas;
+    public Integer getCargaHorariaPresente() {
+        return cargaHorariaPresente;
     }
 
-    public void setAvaliacoesRealizadas(Integer avaliacoesRealizadas) {
-        this.avaliacoesRealizadas = avaliacoesRealizadas;
+    public void setCargaHorariaPresente(Integer cargaHorariaPresente) {
+        this.cargaHorariaPresente = cargaHorariaPresente;
     }
-
 }

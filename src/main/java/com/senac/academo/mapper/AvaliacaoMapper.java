@@ -5,13 +5,13 @@ import com.senac.academo.model.entity.Avaliacao;
 import com.senac.academo.model.entity.Disciplina;
 import org.springframework.stereotype.Component;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.stream.Collectors;
 
 @Component
 public class AvaliacaoMapper {
-
 
     public AvaliacaoDTO toDTO(Avaliacao avaliacao) {
         if (avaliacao == null) {
@@ -24,9 +24,14 @@ public class AvaliacaoMapper {
         dto.setTitulo(avaliacao.getTitulo());
         dto.setDescricao(avaliacao.getDescricao());
         dto.setTipo(avaliacao.getTipo());
-        dto.setPeso(avaliacao.getPeso());
-        dto.setDataAvaliacao(avaliacao.getDataAvaliacao());
-        dto.setDataCriacao(avaliacao.getDataCriacao());
+
+        // Converter Double para BigDecimal
+        if (avaliacao.getPeso() != null) {
+            dto.setPeso(BigDecimal.valueOf(avaliacao.getPeso()));
+        }
+
+        dto.setDataAvaliacao(avaliacao.getData());
+        // REMOVIDO: dto.setDataCriacao - não existe na entidade
 
         // Dados adicionais
         dto.setNomeDisciplina(avaliacao.getDisciplina().getNome());
@@ -34,9 +39,9 @@ public class AvaliacaoMapper {
 
         // Determinar status da avaliação
         LocalDate hoje = LocalDate.now();
-        if (avaliacao.getDataAvaliacao().isAfter(hoje)) {
+        if (avaliacao.getData().isAfter(hoje)) {
             dto.setStatusAvaliacao("Futura");
-        } else if (avaliacao.getDataAvaliacao().isEqual(hoje)) {
+        } else if (avaliacao.getData().isEqual(hoje)) {
             dto.setStatusAvaliacao("Em andamento");
         } else {
             dto.setStatusAvaliacao("Realizada");
@@ -44,7 +49,6 @@ public class AvaliacaoMapper {
 
         return dto;
     }
-
 
     public Avaliacao toEntity(AvaliacaoDTO dto, Disciplina disciplina) {
         if (dto == null) {
@@ -57,12 +61,16 @@ public class AvaliacaoMapper {
         avaliacao.setTitulo(dto.getTitulo());
         avaliacao.setDescricao(dto.getDescricao());
         avaliacao.setTipo(dto.getTipo());
-        avaliacao.setPeso(dto.getPeso());
-        avaliacao.setDataAvaliacao(dto.getDataAvaliacao());
+
+        // Converter BigDecimal para Double
+        if (dto.getPeso() != null) {
+            avaliacao.setPeso(dto.getPeso().doubleValue());
+        }
+
+        avaliacao.setData(dto.getDataAvaliacao());
 
         return avaliacao;
     }
-
 
     public void updateEntityFromDTO(AvaliacaoDTO dto, Avaliacao avaliacao) {
         if (dto.getTitulo() != null) {
@@ -75,13 +83,13 @@ public class AvaliacaoMapper {
             avaliacao.setTipo(dto.getTipo());
         }
         if (dto.getPeso() != null) {
-            avaliacao.setPeso(dto.getPeso());
+            // Converter BigDecimal para Double
+            avaliacao.setPeso(dto.getPeso().doubleValue());
         }
         if (dto.getDataAvaliacao() != null) {
-            avaliacao.setDataAvaliacao(dto.getDataAvaliacao());
+            avaliacao.setData(dto.getDataAvaliacao());
         }
     }
-
 
     public List<AvaliacaoDTO> toDTOList(List<Avaliacao> avaliacoes) {
         return avaliacoes.stream()

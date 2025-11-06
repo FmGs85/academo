@@ -21,13 +21,11 @@ public class DisciplinaService {
     @Autowired
     private DisciplinaMapper disciplinaMapper;
 
-
     @Transactional(readOnly = true)
     public List<DisciplinaDTO> findAll() {
         List<Disciplina> disciplinas = disciplinaRepository.findAll();
         return disciplinaMapper.toDTOList(disciplinas);
     }
-
 
     @Transactional(readOnly = true)
     public DisciplinaDTO findById(Integer id) {
@@ -43,14 +41,12 @@ public class DisciplinaService {
         return dto;
     }
 
-
     @Transactional(readOnly = true)
     public DisciplinaDTO findByCodigo(String codigo) {
         Disciplina disciplina = disciplinaRepository.findByCodigo(codigo)
                 .orElseThrow(() -> new ResourceNotFoundException("Disciplina não encontrada com código: " + codigo));
         return disciplinaMapper.toDTO(disciplina);
     }
-
 
     public DisciplinaDTO create(DisciplinaDTO disciplinaDTO) {
         // Validar se código já existe
@@ -62,7 +58,6 @@ public class DisciplinaService {
         Disciplina savedDisciplina = disciplinaRepository.save(disciplina);
         return disciplinaMapper.toDTO(savedDisciplina);
     }
-
 
     public DisciplinaDTO update(Integer id, DisciplinaDTO disciplinaDTO) {
         Disciplina disciplina = disciplinaRepository.findById(id)
@@ -80,7 +75,6 @@ public class DisciplinaService {
         return disciplinaMapper.toDTO(updatedDisciplina);
     }
 
-
     public void delete(Integer id) {
         Disciplina disciplina = disciplinaRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Disciplina não encontrada com ID: " + id));
@@ -89,13 +83,11 @@ public class DisciplinaService {
         disciplinaRepository.save(disciplina);
     }
 
-
     @Transactional(readOnly = true)
     public List<DisciplinaDTO> findAtivas() {
         List<Disciplina> disciplinas = disciplinaRepository.findByAtivo(true);
         return disciplinaMapper.toDTOList(disciplinas);
     }
-
 
     @Transactional(readOnly = true)
     public List<DisciplinaDTO> findByNome(String nome) {
@@ -103,27 +95,17 @@ public class DisciplinaService {
         return disciplinaMapper.toDTOList(disciplinas);
     }
 
-
     @Transactional(readOnly = true)
     public List<DisciplinaDTO> findByProfessor(Integer professorId) {
         List<Disciplina> disciplinas = disciplinaRepository.findByProfessorId(professorId);
         return disciplinaMapper.toDTOList(disciplinas);
     }
 
-
     @Transactional(readOnly = true)
     public List<DisciplinaDTO> findByAluno(Integer alunoId) {
         List<Disciplina> disciplinas = disciplinaRepository.findByAlunoId(alunoId);
         return disciplinaMapper.toDTOList(disciplinas);
     }
-
-
-    @Transactional(readOnly = true)
-    public List<DisciplinaDTO> findByPeriodo(String periodo) {
-        List<Disciplina> disciplinas = disciplinaRepository.findByPeriodo(periodo);
-        return disciplinaMapper.toDTOList(disciplinas);
-    }
-
 
     @Transactional(readOnly = true)
     public Long contarAlunosMatriculados(Integer disciplinaId) {

@@ -1,7 +1,6 @@
 package com.senac.academo.model.entity;
 
 import jakarta.persistence.*;
-import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 
@@ -10,38 +9,43 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Entity
-@Table(name = "disciplinas", indexes = {
-        @Index(name = "idx_codigo", columnList = "codigo")
+@Table(name = "disciplina", indexes = {
+        @Index(name = "idx_disciplina_codigo", columnList = "disciplina_codigo"),
+        @Index(name = "idx_disciplina_status", columnList = "disciplina_status")
 })
 public class Disciplina {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "disciplina_id")
     private Integer id;
 
-    @NotBlank(message = "Nome da disciplina é obrigatório")
-    @Column(nullable = false)
-    private String nome;
-
-    @NotBlank(message = "Código da disciplina é obrigatório")
-    @Column(nullable = false, unique = true, length = 20)
+    @NotBlank(message = "Código é obrigatório")
+    @Column(name = "disciplina_codigo", nullable = false, unique = true, length = 50)
     private String codigo;
 
-    @Column(columnDefinition = "TEXT")
+    @NotBlank(message = "Nome é obrigatório")
+    @Column(name = "disciplina_nome", nullable = false)
+    private String nome;
+
+    @Column(name = "disciplina_descricao", columnDefinition = "TEXT")
     private String descricao;
 
     @NotNull(message = "Carga horária é obrigatória")
-    @Min(value = 1, message = "Carga horária deve ser maior que zero")
-    @Column(name = "carga_horaria", nullable = false)
-    private Integer cargaHoraria = 60;
+    @Column(name = "disciplina_carga_horaria", nullable = false)
+    private Integer cargaHoraria;
 
-    @Column(nullable = false)
+    @NotNull(message = "Créditos são obrigatórios")
+    @Column(name = "disciplina_creditos", nullable = false)
+    private Integer creditos;
+
+    @Column(name = "disciplina_status", nullable = false)
     private Boolean ativo = true;
 
-    @Column(name = "data_criacao", nullable = false, updatable = false)
+    @Column(name = "disciplina_data_criacao", nullable = false, updatable = false)
     private LocalDateTime dataCriacao;
 
-
+    // Relacionamentos
     @OneToMany(mappedBy = "disciplina", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<DisciplinaProfessor> professores = new ArrayList<>();
 
@@ -57,22 +61,20 @@ public class Disciplina {
         if (this.ativo == null) {
             this.ativo = true;
         }
-        if (this.cargaHoraria == null) {
-            this.cargaHoraria = 60;
-        }
     }
 
-
+    // Construtores
     public Disciplina() {
     }
 
-    public Disciplina(String nome, String codigo, String descricao, Integer cargaHoraria) {
-        this.nome = nome;
+    public Disciplina(String codigo, String nome, Integer cargaHoraria, Integer creditos) {
         this.codigo = codigo;
-        this.descricao = descricao;
+        this.nome = nome;
         this.cargaHoraria = cargaHoraria;
+        this.creditos = creditos;
     }
 
+    // Getters e Setters
     public Integer getId() {
         return id;
     }
@@ -81,20 +83,20 @@ public class Disciplina {
         this.id = id;
     }
 
-    public String getNome() {
-        return nome;
-    }
-
-    public void setNome(String nome) {
-        this.nome = nome;
-    }
-
     public String getCodigo() {
         return codigo;
     }
 
     public void setCodigo(String codigo) {
         this.codigo = codigo;
+    }
+
+    public String getNome() {
+        return nome;
+    }
+
+    public void setNome(String nome) {
+        this.nome = nome;
     }
 
     public String getDescricao() {
@@ -111,6 +113,14 @@ public class Disciplina {
 
     public void setCargaHoraria(Integer cargaHoraria) {
         this.cargaHoraria = cargaHoraria;
+    }
+
+    public Integer getCreditos() {
+        return creditos;
+    }
+
+    public void setCreditos(Integer creditos) {
+        this.creditos = creditos;
     }
 
     public Boolean getAtivo() {
@@ -157,9 +167,10 @@ public class Disciplina {
     public String toString() {
         return "Disciplina{" +
                 "id=" + id +
-                ", nome='" + nome + '\'' +
                 ", codigo='" + codigo + '\'' +
+                ", nome='" + nome + '\'' +
                 ", cargaHoraria=" + cargaHoraria +
+                ", creditos=" + creditos +
                 ", ativo=" + ativo +
                 '}';
     }

@@ -117,4 +117,16 @@ public class UsuarioService {
         List<Usuario> alunos = usuarioRepository.findAlunosByDisciplinaId(disciplinaId);
         return usuarioMapper.toDTOList(alunos);
     }
+
+    public UsuarioDTO convertToDTO(Usuario usuario) {
+        UsuarioDTO dto = new UsuarioDTO();
+        dto.setId(usuario.getId());
+        dto.setNome(usuario.getNome());
+        dto.setEmail(usuario.getEmail());
+        dto.setTipoUsuario(usuario.getTipoUsuario());
+        dto.setAtivo(usuario.getAtivo());
+        dto.setDataCadastro(usuario.getDataCadastro()); // Ajuste conforme o nome no seu DTO
+        // NÃO incluir a senha/senhaHash no DTO de resposta por segurança
+        return dto;
+    }
 }

@@ -2,9 +2,8 @@ package com.senac.academo.repository;
 
 import com.senac.academo.model.entity.Matricula;
 import com.senac.academo.model.enums.StatusMatricula;
+import com.senac.academo.model.enums.SituacaoMatricula;
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Query;
-import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -13,56 +12,58 @@ import java.util.Optional;
 @Repository
 public interface MatriculaRepository extends JpaRepository<Matricula, Integer> {
 
-
+    /**
+     * Busca todas as matrículas de um aluno
+     */
     List<Matricula> findByAlunoId(Integer alunoId);
 
-
+    /**
+     * Busca todas as matrículas de uma disciplina
+     */
     List<Matricula> findByDisciplinaId(Integer disciplinaId);
 
-
-    List<Matricula> findByPeriodo(String periodo);
-
-
-    Optional<Matricula> findByAlunoIdAndDisciplinaIdAndPeriodo(
-            Integer alunoId, Integer disciplinaId, String periodo);
-
-
+    /**
+     * Busca matrículas por status
+     */
     List<Matricula> findByStatus(StatusMatricula status);
 
+    /**
+     * Busca matrículas por situação
+     */
+    List<Matricula> findBySituacao(SituacaoMatricula situacao);
 
-    @Query("SELECT m FROM Matricula m WHERE m.aluno.id = :alunoId AND m.status = 'ATIVA'")
-    List<Matricula> findMatriculasAtivasByAlunoId(@Param("alunoId") Integer alunoId);
+    /**
+     * Busca matrículas de um aluno com um status específico
+     */
+    List<Matricula> findByAlunoIdAndStatus(Integer alunoId, StatusMatricula status);
 
+    /**
+     * Busca matrículas de uma disciplina com um status específico
+     */
+    List<Matricula> findByDisciplinaIdAndStatus(Integer disciplinaId, StatusMatricula status);
 
-    @Query("SELECT m FROM Matricula m " +
-            "WHERE m.aluno.id = :alunoId " +
-            "AND m.periodo = :periodo")
-    List<Matricula> findByAlunoIdAndPeriodo(
-            @Param("alunoId") Integer alunoId,
-            @Param("periodo") String periodo);
+    /**
+     * Busca uma matrícula específica de um aluno em uma disciplina
+     */
+    Optional<Matricula> findByAlunoIdAndDisciplinaId(Integer alunoId, Integer disciplinaId);
 
+    /**
+     * Verifica se existe matrícula de um aluno em uma disciplina
+     */
+    boolean existsByAlunoIdAndDisciplinaId(Integer alunoId, Integer disciplinaId);
 
-    @Query("SELECT m FROM Matricula m " +
-            "WHERE m.disciplina.id = :disciplinaId " +
-            "AND m.periodo = :periodo " +
-            "AND m.status = 'ATIVA'")
-    List<Matricula> findByDisciplinaIdAndPeriodo(
-            @Param("disciplinaId") Integer disciplinaId,
-            @Param("periodo") String periodo);
+    /**
+     * Verifica se existe matrícula ativa de um aluno em uma disciplina
+     */
+    boolean existsByAlunoIdAndDisciplinaIdAndStatus(Integer alunoId, Integer disciplinaId, StatusMatricula status);
 
+    /**
+     * Conta quantas matrículas ativas um aluno possui
+     */
+    long countByAlunoIdAndStatus(Integer alunoId, StatusMatricula status);
 
-    boolean existsByAlunoIdAndDisciplinaIdAndPeriodo(
-            Integer alunoId, Integer disciplinaId, String periodo);
-
-
-    @Query("SELECT COUNT(m) FROM Matricula m " +
-            "WHERE m.aluno.id = :alunoId " +
-            "AND m.status = 'ATIVA'")
-    Long countMatriculasAtivasByAlunoId(@Param("alunoId") Integer alunoId);
-
-
-    @Query("SELECT DISTINCT m FROM Matricula m " +
-            "LEFT JOIN FETCH m.notas n " +
-            "WHERE m.id = :matriculaId")
-    Optional<Matricula> findByIdWithNotas(@Param("matriculaId") Integer matriculaId);
+    /**
+     * Busca todas as matrículas ativas
+     */
+    List<Matricula> findByStatusOrderByDataMatriculaDesc(StatusMatricula status);
 }

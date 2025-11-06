@@ -32,13 +32,11 @@ public class AvaliacaoService {
     @Autowired
     private AvaliacaoMapper avaliacaoMapper;
 
-
     @Transactional(readOnly = true)
     public List<AvaliacaoDTO> findAll() {
         List<Avaliacao> avaliacoes = avaliacaoRepository.findAll();
         return avaliacaoMapper.toDTOList(avaliacoes);
     }
-
 
     @Transactional(readOnly = true)
     public AvaliacaoDTO findById(Integer id) {
@@ -54,7 +52,6 @@ public class AvaliacaoService {
         return dto;
     }
 
-
     public AvaliacaoDTO create(AvaliacaoDTO avaliacaoDTO) {
         // Validar se disciplina existe
         Disciplina disciplina = disciplinaRepository.findById(avaliacaoDTO.getDisciplinaId())
@@ -65,7 +62,6 @@ public class AvaliacaoService {
         return avaliacaoMapper.toDTO(savedAvaliacao);
     }
 
-
     public AvaliacaoDTO update(Integer id, AvaliacaoDTO avaliacaoDTO) {
         Avaliacao avaliacao = avaliacaoRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Avaliação não encontrada com ID: " + id));
@@ -75,7 +71,6 @@ public class AvaliacaoService {
         return avaliacaoMapper.toDTO(updatedAvaliacao);
     }
 
-
     public void delete(Integer id) {
         if (!avaliacaoRepository.existsById(id)) {
             throw new ResourceNotFoundException("Avaliação não encontrada com ID: " + id);
@@ -83,13 +78,11 @@ public class AvaliacaoService {
         avaliacaoRepository.deleteById(id);
     }
 
-
     @Transactional(readOnly = true)
     public List<AvaliacaoDTO> findByDisciplina(Integer disciplinaId) {
         List<Avaliacao> avaliacoes = avaliacaoRepository.findByDisciplinaId(disciplinaId);
         return avaliacaoMapper.toDTOList(avaliacoes);
     }
-
 
     @Transactional(readOnly = true)
     public List<AvaliacaoDTO> findByTipo(TipoAvaliacao tipo) {
@@ -97,48 +90,41 @@ public class AvaliacaoService {
         return avaliacaoMapper.toDTOList(avaliacoes);
     }
 
-
     @Transactional(readOnly = true)
     public List<AvaliacaoDTO> findByDisciplinaAndTipo(Integer disciplinaId, TipoAvaliacao tipo) {
         List<Avaliacao> avaliacoes = avaliacaoRepository.findByDisciplinaIdAndTipo(disciplinaId, tipo);
         return avaliacaoMapper.toDTOList(avaliacoes);
     }
 
-
     @Transactional(readOnly = true)
     public List<AvaliacaoDTO> findByData(LocalDate data) {
-        List<Avaliacao> avaliacoes = avaliacaoRepository.findByDataAvaliacao(data);
+        List<Avaliacao> avaliacoes = avaliacaoRepository.findByData(data);
         return avaliacaoMapper.toDTOList(avaliacoes);
     }
-
 
     @Transactional(readOnly = true)
     public List<AvaliacaoDTO> findByDataBetween(LocalDate dataInicio, LocalDate dataFim) {
-        List<Avaliacao> avaliacoes = avaliacaoRepository.findByDataAvaliacaoBetween(dataInicio, dataFim);
+        List<Avaliacao> avaliacoes = avaliacaoRepository.findByDataBetween(dataInicio, dataFim);
         return avaliacaoMapper.toDTOList(avaliacoes);
     }
-
 
     @Transactional(readOnly = true)
     public List<AvaliacaoDTO> findAvaliacoesFuturas(Integer disciplinaId) {
-        List<Avaliacao> avaliacoes = avaliacaoRepository.findAvaliacoesFuturasByDisciplinaId(disciplinaId);
+        List<Avaliacao> avaliacoes = avaliacaoRepository.findByDisciplinaIdAndDataGreaterThanEqualOrderByDataAsc(disciplinaId, LocalDate.now());
         return avaliacaoMapper.toDTOList(avaliacoes);
     }
-
 
     @Transactional(readOnly = true)
     public List<AvaliacaoDTO> findAvaliacoesRealizadas(Integer disciplinaId) {
-        List<Avaliacao> avaliacoes = avaliacaoRepository.findAvaliacoesRealizadasByDisciplinaId(disciplinaId);
+        List<Avaliacao> avaliacoes = avaliacaoRepository.findByDisciplinaIdAndDataLessThanOrderByDataDesc(disciplinaId, LocalDate.now());
         return avaliacaoMapper.toDTOList(avaliacoes);
     }
-
 
     @Transactional(readOnly = true)
     public List<AvaliacaoDTO> findByDisciplinaOrderByData(Integer disciplinaId) {
-        List<Avaliacao> avaliacoes = avaliacaoRepository.findByDisciplinaIdOrderByDataAvaliacao(disciplinaId);
+        List<Avaliacao> avaliacoes = avaliacaoRepository.findByDisciplinaIdOrderByDataAsc(disciplinaId);
         return avaliacaoMapper.toDTOList(avaliacoes);
     }
-
 
     @Transactional(readOnly = true)
     public Long contarAvaliacoes(Integer disciplinaId) {

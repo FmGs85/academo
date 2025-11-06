@@ -1,21 +1,16 @@
 package com.senac.academo.model.enums;
 
 public enum TipoAvaliacao {
-    PROVA("prova", "Prova"),
-    TRABALHO("trabalho", "Trabalho"),
-    PROJETO("projeto", "Projeto"),
-    PARTICIPACAO("participacao", "Participação");
+    PROVA("Prova"),
+    TRABALHO("Trabalho"),
+    PROJETO("Projeto"),
+    SEMINARIO("Seminário"),
+    OUTROS("Outros");
 
-    private final String valor;
     private final String descricao;
 
-    TipoAvaliacao(String valor, String descricao) {
-        this.valor = valor;
+    TipoAvaliacao(String descricao) {
         this.descricao = descricao;
-    }
-
-    public String getValor() {
-        return valor;
     }
 
     public String getDescricao() {
@@ -23,11 +18,10 @@ public enum TipoAvaliacao {
     }
 
     public static TipoAvaliacao fromValor(String valor) {
-        for (TipoAvaliacao tipo : TipoAvaliacao.values()) {
-            if (tipo.valor.equalsIgnoreCase(valor)) {
-                return tipo;
-            }
+        try {
+            return TipoAvaliacao.valueOf(valor.toUpperCase());
+        } catch (IllegalArgumentException e) {
+            throw new IllegalArgumentException("Tipo de avaliação inválido: " + valor);
         }
-        throw new IllegalArgumentException("Tipo de avaliação inválido: " + valor);
     }
 }

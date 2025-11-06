@@ -1,75 +1,66 @@
 package com.senac.academo.model.entity;
 
 import jakarta.persistence.*;
-import jakarta.validation.constraints.DecimalMax;
-import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.NotNull;
 
-import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "notas",
-        uniqueConstraints = @UniqueConstraint(name = "unique_matricula_avaliacao",
-                columnNames = {"matricula_id", "avaliacao_id"}),
+@Table(name = "nota",
         indexes = {
-                @Index(name = "idx_matricula", columnList = "matricula_id"),
-                @Index(name = "idx_avaliacao", columnList = "avaliacao_id")
-        })
+                @Index(name = "idx_nota_matricula", columnList = "nota_matricula_id"),
+                @Index(name = "idx_nota_avaliacao", columnList = "nota_avaliacao_id")
+        },
+        uniqueConstraints = {
+                @UniqueConstraint(name = "uk_matricula_avaliacao", columnNames = {"nota_matricula_id", "nota_avaliacao_id"})
+        }
+)
 public class Nota {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "nota_id")
     private Integer id;
 
     @NotNull(message = "Matrícula é obrigatória")
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "matricula_id", nullable = false)
+    @JoinColumn(name = "nota_matricula_id", nullable = false)
     private Matricula matricula;
 
     @NotNull(message = "Avaliação é obrigatória")
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "avaliacao_id", nullable = false)
+    @JoinColumn(name = "nota_avaliacao_id", nullable = false)
     private Avaliacao avaliacao;
 
-    @NotNull(message = "Nota é obrigatória")
-    @DecimalMin(value = "0.00", message = "Nota deve ser maior ou igual a 0")
-    @DecimalMax(value = "10.00", message = "Nota deve ser menor ou igual a 10")
-    @Column(nullable = false, precision = 4, scale = 2)
-    private BigDecimal nota;
+    @NotNull(message = "Valor da nota é obrigatório")
+    @Column(name = "nota_valor", nullable = false)
+    private Double valor = 0.0;
 
-    @Column(name = "data_lancamento", nullable = false)
+    @Column(name = "nota_data_lancamento", nullable = false, updatable = false)
     private LocalDateTime dataLancamento;
 
-    @Column(columnDefinition = "TEXT")
-    private String observacoes;
+    @Column(name = "nota_observacao", columnDefinition = "TEXT")
+    private String observacao;
 
     @PrePersist
     protected void onCreate() {
         this.dataLancamento = LocalDateTime.now();
+        if (this.valor == null) {
+            this.valor = 0.0;
+        }
     }
 
-    @PreUpdate
-    protected void onUpdate() {
-        this.dataLancamento = LocalDateTime.now();
-    }
-
+    // Construtores
     public Nota() {
     }
 
-    public Nota(Matricula matricula, Avaliacao avaliacao, BigDecimal nota) {
+    public Nota(Matricula matricula, Avaliacao avaliacao, Double valor) {
         this.matricula = matricula;
         this.avaliacao = avaliacao;
-        this.nota = nota;
+        this.valor = valor;
     }
 
-    public Nota(Matricula matricula, Avaliacao avaliacao, BigDecimal nota, String observacoes) {
-        this.matricula = matricula;
-        this.avaliacao = avaliacao;
-        this.nota = nota;
-        this.observacoes = observacoes;
-    }
-
+    // Getters e Setters
     public Integer getId() {
         return id;
     }
@@ -94,12 +85,12 @@ public class Nota {
         this.avaliacao = avaliacao;
     }
 
-    public BigDecimal getNota() {
-        return nota;
+    public Double getValor() {
+        return valor;
     }
 
-    public void setNota(BigDecimal nota) {
-        this.nota = nota;
+    public void setValor(Double valor) {
+        this.valor = valor;
     }
 
     public LocalDateTime getDataLancamento() {
@@ -110,20 +101,21 @@ public class Nota {
         this.dataLancamento = dataLancamento;
     }
 
-    public String getObservacoes() {
-        return observacoes;
+    public String getObservacao() {
+        return observacao;
     }
 
-    public void setObservacoes(String observacoes) {
-        this.observacoes = observacoes;
+    public void setObservacao(String observacao) {
+        this.observacao = observacao;
     }
-
 
     @Override
     public String toString() {
         return "Nota{" +
                 "id=" + id +
-                ", nota=" + nota +
+                ", matricula=" + (matricula != null ? matricula.getId() : null) +
+                ", avaliacao=" + (avaliacao != null ? avaliacao.getTitulo() : null) +
+                ", valor=" + valor +
                 ", dataLancamento=" + dataLancamento +
                 '}';
     }

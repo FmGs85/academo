@@ -1,6 +1,7 @@
 package com.senac.academo.service;
 
 import com.senac.academo.exception.ResourceNotFoundException;
+import com.senac.academo.mapper.NotaMapper;
 import com.senac.academo.model.dto.NotaDTO;
 import com.senac.academo.model.entity.Avaliacao;
 import com.senac.academo.model.entity.Matricula;
@@ -12,10 +13,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 @Transactional
@@ -30,110 +28,166 @@ public class NotaService {
     @Autowired
     private AvaliacaoRepository avaliacaoRepository;
 
+    @Autowired
+    private NotaMapper notaMapper;
 
     @Transactional(readOnly = true)
     public List<NotaDTO> findAll() {
-        return notaRepository.findAll().stream()
-                .map(this::convertToDTO)
-                .collect(Collectors.toList());
+        List<Nota> notas = notaRepository.findAll();
+        return notaMapper.toDTOList(notas);
     }
-
 
     @Transactional(readOnly = true)
     public NotaDTO findById(Integer id) {
         Nota nota = notaRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Nota não encontrada com ID: " + id));
-        return convertToDTO(nota);
+        return notaMapper.toDTO(nota);
     }
 
-
-    public NotaDTO lancarNota(NotaDTO notaDTO) {
-        // Verificar se matrícula existe
+    public NotaDTO create(NotaDTO notaDTO) {
+        // Validar matrícula
         Matricula matricula = matriculaRepository.findById(notaDTO.getMatriculaId())
                 .orElseThrow(() -> new ResourceNotFoundException("Matrícula não encontrada"));
 
-        // Verificar se avaliação existe
+        // Validar avaliação
         Avaliacao avaliacao = avaliacaoRepository.findById(notaDTO.getAvaliacaoId())
                 .orElseThrow(() -> new ResourceNotFoundException("Avaliação não encontrada"));
 
-        // Verificar se já existe nota para esta matrícula e avaliação
+        // Validar se já existe nota para esta matrícula e avaliação
         if (notaRepository.existsByMatriculaIdAndAvaliacaoId(
                 notaDTO.getMatriculaId(), notaDTO.getAvaliacaoId())) {
-            throw new IllegalArgumentException("Já existe nota lançada para esta avaliação");
+            throw new IllegalArgumentException(
+                    "Já existe uma nota lançada para esta avaliação nesta matrícula");
+        }
+
+        // Validar valor da nota
+        if (notaDTO.getValor() < 0 || notaDTO.getValor() > 10) {
+            throw new IllegalArgumentException("Nota deve estar entre 0 e 10");
         }
 
         Nota nota = new Nota();
         nota.setMatricula(matricula);
         nota.setAvaliacao(avaliacao);
-        nota.setNota(notaDTO.getNota());
-        nota.setObservacoes(notaDTO.getObservacoes());
+        nota.setValor(notaDTO.getValor());
+        nota.setObservacao(notaDTO.getObservacao());
 
         Nota savedNota = notaRepository.save(nota);
-        return convertToDTO(savedNota);
+
+        // Atualizar média final da matrícula
+        atualizarMediaMatricula(matricula.getId());
+
+        return notaMapper.toDTO(savedNota);
     }
 
-
-    public NotaDTO atualizarNota(Integer id, NotaDTO notaDTO) {
+    public NotaDTO update(Integer id, NotaDTO notaDTO) {
         Nota nota = notaRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Nota não encontrada com ID: " + id));
 
-        nota.setNota(notaDTO.getNota());
-        if (notaDTO.getObservacoes() != null) {
-            nota.setObservacoes(notaDTO.getObservacoes());
+        // Validar valor da nota
+        if (notaDTO.getValor() < 0 || notaDTO.getValor() > 10) {
+            throw new IllegalArgumentException("Nota deve estar entre 0 e 10");
         }
+
+        nota.setValor(notaDTO.getValor());
+        nota.setObservacao(notaDTO.getObservacao());
 
         Nota updatedNota = notaRepository.save(nota);
-        return convertToDTO(updatedNota);
-    }
 
+        // Atualizar média final da matrícula
+        atualizarMediaMatricula(nota.getMatricula().getId());
+
+        return notaMapper.toDTO(updatedNota);
+    }
 
     public void delete(Integer id) {
-        if (!notaRepository.existsById(id)) {
-            throw new ResourceNotFoundException("Nota não encontrada com ID: " + id);
-        }
-        notaRepository.deleteById(id);
-    }
+        Nota nota = notaRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Nota não encontrada com ID: " + id));
 
+        Integer matriculaId = nota.getMatricula().getId();
+        notaRepository.deleteById(id);
+
+        // Atualizar média final da matrícula
+        atualizarMediaMatricula(matriculaId);
+    }
 
     @Transactional(readOnly = true)
-    public List<NotaDTO> findByMatriculaId(Integer matriculaId) {
-        return notaRepository.findByMatriculaId(matriculaId).stream()
-                .map(this::convertToDTO)
-                .collect(Collectors.toList());
+    public List<NotaDTO> findByMatricula(Integer matriculaId) {
+        List<Nota> notas = notaRepository.findByMatriculaId(matriculaId);
+        return notaMapper.toDTOList(notas);
     }
 
+    @Transactional(readOnly = true)
+    public List<NotaDTO> findByAvaliacao(Integer avaliacaoId) {
+        List<Nota> notas = notaRepository.findByAvaliacaoId(avaliacaoId);
+        return notaMapper.toDTOList(notas);
+    }
+
+    @Transactional(readOnly = true)
+    public List<NotaDTO> findByAluno(Integer alunoId) {
+        List<Nota> notas = notaRepository.findByMatriculaAlunoId(alunoId);
+        return notaMapper.toDTOList(notas);
+    }
+
+    @Transactional(readOnly = true)
+    public List<NotaDTO> findByDisciplina(Integer disciplinaId) {
+        List<Nota> notas = notaRepository.findByMatriculaDisciplinaId(disciplinaId);
+        return notaMapper.toDTOList(notas);
+    }
+
+    @Transactional(readOnly = true)
+    public Double calcularMediaMatricula(Integer matriculaId) {
+        List<Nota> notas = notaRepository.findByMatriculaId(matriculaId);
+
+        if (notas.isEmpty()) {
+            return 0.0;
+        }
+
+        double somaNotas = 0.0;
+        double somaPesos = 0.0;
+
+        for (Nota nota : notas) {
+            if (nota.getAvaliacao() != null) {
+                double peso = nota.getAvaliacao().getPeso() != null ? nota.getAvaliacao().getPeso() : 1.0;
+                somaNotas += nota.getValor() * peso;
+                somaPesos += peso;
+            }
+        }
+
+        return somaPesos > 0 ? somaNotas / somaPesos : 0.0;
+    }
+
+    private void atualizarMediaMatricula(Integer matriculaId) {
+        Matricula matricula = matriculaRepository.findById(matriculaId)
+                .orElseThrow(() -> new ResourceNotFoundException("Matrícula não encontrada"));
+
+        Double media = calcularMediaMatricula(matriculaId);
+        matricula.setMediaFinal(media);
+
+        // Atualizar situação baseado na média
+        if (media >= 7.0) {
+            matricula.setSituacao(com.senac.academo.model.enums.SituacaoMatricula.APROVADO);
+        } else if (media >= 4.0) {
+            matricula.setSituacao(com.senac.academo.model.enums.SituacaoMatricula.CURSANDO);
+        } else {
+            matricula.setSituacao(com.senac.academo.model.enums.SituacaoMatricula.REPROVADO);
+        }
+
+        matriculaRepository.save(matricula);
+    }
+    @Transactional(readOnly = true)
+    public List<NotaDTO> findByMatriculaId(Integer matriculaId) {
+        return findByMatricula(matriculaId);
+    }
 
     @Transactional(readOnly = true)
     public List<NotaDTO> findByAlunoIdAndDisciplinaId(Integer alunoId, Integer disciplinaId) {
-        return notaRepository.findByAlunoIdAndDisciplinaId(alunoId, disciplinaId).stream()
-                .map(this::convertToDTO)
-                .collect(Collectors.toList());
+        List<Nota> notas = notaRepository.findByMatriculaAlunoIdAndMatriculaDisciplinaId(alunoId, disciplinaId);
+        return notaMapper.toDTOList(notas);
     }
-
 
     @Transactional(readOnly = true)
-    public BigDecimal calcularMediaPonderada(Integer matriculaId) {
-        BigDecimal media = notaRepository.calcularMediaPonderada(matriculaId);
-        return media != null ? media.setScale(2, RoundingMode.HALF_UP) : BigDecimal.ZERO;
-    }
-
-
-    private NotaDTO convertToDTO(Nota nota) {
-        NotaDTO dto = new NotaDTO();
-        dto.setId(nota.getId());
-        dto.setMatriculaId(nota.getMatricula().getId());
-        dto.setAvaliacaoId(nota.getAvaliacao().getId());
-        dto.setNota(nota.getNota());
-        dto.setObservacoes(nota.getObservacoes());
-        dto.setDataLancamento(nota.getDataLancamento());
-
-        // Dados adicionais
-        dto.setNomeAluno(nota.getMatricula().getAluno().getNome());
-        dto.setNomeDisciplina(nota.getMatricula().getDisciplina().getNome());
-        dto.setTituloAvaliacao(nota.getAvaliacao().getTitulo());
-        dto.setTipoAvaliacao(nota.getAvaliacao().getTipo().getDescricao());
-        dto.setPesoAvaliacao(nota.getAvaliacao().getPeso());
-
-        return dto;
+    public java.math.BigDecimal calcularMediaPonderada(Integer matriculaId) {
+        Double media = calcularMediaMatricula(matriculaId);
+        return java.math.BigDecimal.valueOf(media);
     }
 }

@@ -36,7 +36,7 @@ public class NotaController {
 
     @PostMapping
     public ResponseEntity<NotaDTO> lancarNota(@Valid @RequestBody NotaDTO notaDTO) {
-        NotaDTO novaNota = notaService.lancarNota(notaDTO);
+        NotaDTO novaNota = notaService.create(notaDTO);
         return ResponseEntity.status(HttpStatus.CREATED).body(novaNota);
     }
 
@@ -45,7 +45,7 @@ public class NotaController {
     public ResponseEntity<NotaDTO> atualizarNota(
             @PathVariable Integer id,
             @Valid @RequestBody NotaDTO notaDTO) {
-        NotaDTO notaAtualizada = notaService.atualizarNota(id, notaDTO);
+        NotaDTO notaAtualizada = notaService.update(id, notaDTO);
         return ResponseEntity.ok(notaAtualizada);
     }
 
@@ -98,9 +98,7 @@ public class NotaController {
             }
         }
 
-        // ============================================
-        // GERE AQUI: Getters e Setters
-        // ============================================
+
 
         public BigDecimal getMediaPonderada() { return mediaPonderada; }
         public void setMediaPonderada(BigDecimal mediaPonderada) { this.mediaPonderada = mediaPonderada; }

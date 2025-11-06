@@ -12,19 +12,14 @@ import java.util.Optional;
 @Repository
 public interface DisciplinaRepository extends JpaRepository<Disciplina, Integer> {
 
-
     Optional<Disciplina> findByCodigo(String codigo);
-
 
     boolean existsByCodigo(String codigo);
 
-
     List<Disciplina> findByAtivo(Boolean ativo);
-
 
     @Query("SELECT d FROM Disciplina d WHERE LOWER(d.nome) LIKE LOWER(CONCAT('%', :nome, '%'))")
     List<Disciplina> findByNomeContaining(@Param("nome") String nome);
-
 
     @Query("SELECT DISTINCT d FROM Disciplina d " +
             "JOIN d.professores dp " +
@@ -33,21 +28,12 @@ public interface DisciplinaRepository extends JpaRepository<Disciplina, Integer>
             "AND d.ativo = true")
     List<Disciplina> findByProfessorId(@Param("professorId") Integer professorId);
 
-
     @Query("SELECT DISTINCT d FROM Disciplina d " +
             "JOIN d.matriculas m " +
             "WHERE m.aluno.id = :alunoId " +
             "AND m.status = 'ATIVA' " +
             "AND d.ativo = true")
     List<Disciplina> findByAlunoId(@Param("alunoId") Integer alunoId);
-
-
-    @Query("SELECT DISTINCT d FROM Disciplina d " +
-            "JOIN d.matriculas m " +
-            "WHERE m.periodo = :periodo " +
-            "AND d.ativo = true")
-    List<Disciplina> findByPeriodo(@Param("periodo") String periodo);
-
 
     @Query("SELECT COUNT(DISTINCT m.aluno.id) FROM Matricula m " +
             "WHERE m.disciplina.id = :disciplinaId " +
