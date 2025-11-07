@@ -11,7 +11,7 @@ public class AcademoApplication {
         System.out.println("\n========================================");
         System.out.println("🚀 ACADEMO API INICIADA COM SUCESSO!");
         System.out.println("📱 Sistema Acadêmico Mobile - Backend");
-        System.out.println("🌐 URL: http://localhost:8080/api");
+        System.out.println("🌐 URL: http://localhost:8081/swagger-ui/index.html");
         System.out.println("========================================\n");
     }
 }
