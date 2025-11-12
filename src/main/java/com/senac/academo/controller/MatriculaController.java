@@ -1,7 +1,9 @@
 package com.senac.academo.controller;
 
 import com.senac.academo.mapper.MatriculaMapper;
+import com.senac.academo.mapper.MatriculaDetalhadaMapper;
 import com.senac.academo.model.dto.MatriculaDTO;
+import com.senac.academo.model.dto.MatriculaDetalhadaDTO;
 import com.senac.academo.model.entity.Matricula;
 import com.senac.academo.model.enums.StatusMatricula;
 import com.senac.academo.service.MatriculaService;
@@ -25,6 +27,9 @@ public class MatriculaController {
 
     @Autowired
     private MatriculaMapper matriculaMapper;
+
+    @Autowired
+    private MatriculaDetalhadaMapper matriculaDetalhadaMapper;
 
     @GetMapping
     public ResponseEntity<List<MatriculaDTO>> listarTodas() {
@@ -65,10 +70,11 @@ public class MatriculaController {
         return ResponseEntity.noContent().build();
     }
 
+    // ENDPOINT ATUALIZADO: Retorna dados detalhados com objeto disciplina completo
     @GetMapping("/aluno/{alunoId}")
-    public ResponseEntity<List<MatriculaDTO>> listarPorAluno(@PathVariable Integer alunoId) {
+    public ResponseEntity<List<MatriculaDetalhadaDTO>> listarPorAluno(@PathVariable Integer alunoId) {
         List<Matricula> matriculas = matriculaService.buscarPorAluno(alunoId);
-        List<MatriculaDTO> dtos = matriculaMapper.toDTOList(matriculas);
+        List<MatriculaDetalhadaDTO> dtos = matriculaDetalhadaMapper.toDTOList(matriculas);
         return ResponseEntity.ok(dtos);
     }
 
@@ -88,13 +94,13 @@ public class MatriculaController {
     }
 
     @GetMapping("/aluno/{alunoId}/ativas")
-    public ResponseEntity<List<MatriculaDTO>> listarAtivasPorAluno(@PathVariable Integer alunoId) {
+    public ResponseEntity<List<MatriculaDetalhadaDTO>> listarAtivasPorAluno(@PathVariable Integer alunoId) {
         List<Matricula> matriculas = matriculaService.buscarPorAluno(alunoId);
         // Filtrar apenas as ativas
         List<Matricula> ativas = matriculas.stream()
                 .filter(m -> m.getStatus() == StatusMatricula.ATIVA)
                 .toList();
-        List<MatriculaDTO> dtos = matriculaMapper.toDTOList(ativas);
+        List<MatriculaDetalhadaDTO> dtos = matriculaDetalhadaMapper.toDTOList(ativas);
         return ResponseEntity.ok(dtos);
     }
 
